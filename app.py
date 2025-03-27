@@ -63,7 +63,7 @@ def create_calendar_event(date, time):
 
     service.events().insert(calendarId=CALENDAR_ID, body=event).execute()
 
-@app.post("/chat")
+@app.get("/")
 async def chat_endpoint(msg: ChatMessage):
     """Handles user messages."""
     response = detect_intent(msg.session_id, msg.text)
