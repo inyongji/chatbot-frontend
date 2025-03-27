@@ -7,7 +7,7 @@
             let text = document.getElementById("user_input").value;
             let session_id = localStorage.getItem("session_id") || generateSessionID();
             
-            let response = await fetch("http://127.0.0.1:8000/chat", {
+            let response = await fetch("https://inyongji.github.io/chatbot-frontend/", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ session_id, text })
