@@ -57,7 +57,10 @@ def create_calendar_event(date, time):
     scopes = ["https://www.googleapis.com/auth/calendar"]
     
     # Load service account credentials from the environment variable
+    
     service_account_info = json.loads(os.environ['GOOGLE_CREDENTIALS'])
+    print("os.environ: ", os.environ['GOOGLE_CREDENTIALS'])
+    print("service_account_info: ", service_account_info)
     credentials = service_account.Credentials.from_service_account_info(service_account_info, scopes=scopes)
     
     service = build("calendar", "v3", credentials=credentials)
