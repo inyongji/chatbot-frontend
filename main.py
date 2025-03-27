@@ -9,6 +9,11 @@ from google.protobuf.json_format import MessageToDict
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from datetime import datetime, timedelta
+from googleapiclient.discovery import build
+from google.oauth2 import service_account
+import os
+import json
 
 # Initialize Jinja2Templates
 templates = Jinja2Templates(directory="templates")
@@ -50,7 +55,11 @@ def detect_intent(session_id: str, text: str):
 def create_calendar_event(date, time):
     """Creates an event in Google Calendar."""
     scopes = ["https://www.googleapis.com/auth/calendar"]
-    credentials, project = google.auth.load_credentials_from_file(CREDENTIALS_PATH, scopes=scopes)
+    
+    # Load service account credentials from the environment variable
+    service_account_info = json.loads(os.environ['GOOGLE_CREDENTIALS'])
+    credentials = service_account.Credentials.from_service_account_info(service_account_info, scopes=scopes)
+    
     service = build("calendar", "v3", credentials=credentials)
 
     end_time = (datetime.fromisoformat(f"{date}T{time}") + timedelta(minutes=30)).isoformat()
@@ -61,7 +70,7 @@ def create_calendar_event(date, time):
         "end": {"dateTime": end_time, "timeZone": "Asia/Bangkok"},
     }
 
-    service.events().insert(calendarId=CALENDAR_ID, body=event).execute()
+    service.events().insert(calendarId=os.environ['CALENDAR_ID'], body=event).execute()
 
 @app.post("/chat")
 async def chat_endpoint(msg: ChatMessage):
