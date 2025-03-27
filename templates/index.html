@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chatbot</title>
+    <script>
+        async function sendMessage() {
+            let text = document.getElementById("user_input").value;
+            let session_id = localStorage.getItem("session_id") || generateSessionID();
+            
+            let response = await fetch("https://dentalchatbot-6a8bb9568631.herokuapp.com/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ session_id, text })
+            });
+
+            let data = await response.json();
+            document.getElementById("chatbox").innerHTML += "<p><b>You:</b> " + text + "</p>";
+            document.getElementById("chatbox").innerHTML += "<p><b>Bot:</b> " + data.response + "</p>";
+
+            document.getElementById("user_input").value = "";
+        }
+
+        function generateSessionID() {
+            let session_id = Math.random().toString(36).substr(2, 9);
+            localStorage.setItem("session_id", session_id);
+            return session_id;
+        }
+    </script>
+</head>
+<body>
+    <h2>Chat with Bot</h2>
+    <div id="chatbox" style="border:1px solid black; padding:10px; width:300px; height:200px; overflow-y:scroll;"></div>
+    <input type="text" id="user_input" />
+    <button onclick="sendMessage()">Send</button>
+</body>
+</html>
