@@ -8,15 +8,8 @@ from datetime import datetime, timedelta
 from google.protobuf.json_format import MessageToDict
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import os
-import uvicorn
 
 app = FastAPI()
-
-# Allow requests from GitHub Pages (replace with your actual GitHub Pages URL)
-origins = [
-    "https://inyongji.github.io/chatbot-frontend/",
-]
 
 # Add CORS middleware
 app.add_middleware(
@@ -63,7 +56,7 @@ def create_calendar_event(date, time):
 
     service.events().insert(calendarId=CALENDAR_ID, body=event).execute()
 
-@app.get("/")
+@app.POST("/")
 async def chat_endpoint(msg: ChatMessage):
     """Handles user messages."""
     response = detect_intent(msg.session_id, msg.text)
@@ -84,7 +77,3 @@ async def chat_endpoint(msg: ChatMessage):
         create_calendar_event(date, time)
     
     return {"response": response.query_result.fulfillment_text}
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))  # Use Heroku's assigned port
-    uvicorn.run(app, host="0.0.0.0", port=port)
