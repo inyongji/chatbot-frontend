@@ -6,10 +6,12 @@ import google.auth
 from googleapiclient.discovery import build
 from datetime import datetime, timedelta
 from google.protobuf.json_format import MessageToDict
-from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+
+# Define allowed origins (modify as needed)
+origins = ["*"]  # Change this to restrict access, e.g., ["https://yourfrontend.com"]
 
 # Add CORS middleware
 app.add_middleware(
@@ -46,17 +48,17 @@ def create_calendar_event(date, time):
     credentials, project = google.auth.load_credentials_from_file(CREDENTIALS_PATH, scopes=scopes)
     service = build("calendar", "v3", credentials=credentials)
 
-    end_time = (datetime.fromisoformat(f"{date}T{time}") + timedelta(minutes=30)).time()
+    end_time = (datetime.fromisoformat(f"{date}T{time}") + timedelta(minutes=30)).isoformat()
 
     event = {
         "summary": "Dental Appointment",
         "start": {"dateTime": f"{date}T{time}", "timeZone": "Asia/Bangkok"},
-        "end": {"dateTime": f"{date}T{end_time}", "timeZone": "Asia/Bangkok"},
+        "end": {"dateTime": end_time, "timeZone": "Asia/Bangkok"},
     }
 
     service.events().insert(calendarId=CALENDAR_ID, body=event).execute()
 
-@app.POST("/")
+@app.post("/")
 async def chat_endpoint(msg: ChatMessage):
     """Handles user messages."""
     response = detect_intent(msg.session_id, msg.text)
@@ -64,15 +66,15 @@ async def chat_endpoint(msg: ChatMessage):
     response_json = MessageToDict(response._pb)
     
     if intent_name == "appointment_booking - custom.date_time":
-        parameters = response_json["queryResult"]["parameters"]
+        parameters = response_json["queryResult"].get("parameters", {})
         if 'date-time' in parameters:
-            date_time = parameters['date-time']['date_time']
+            date_time = parameters['date-time']
         else:
             return {"response": "Missing date or time"}
 
         date_time_obj = datetime.fromisoformat(date_time)
-        date = date_time_obj.date()
-        time = date_time_obj.time()
+        date = date_time_obj.date().isoformat()
+        time = date_time_obj.time().isoformat()
 
         create_calendar_event(date, time)
     
